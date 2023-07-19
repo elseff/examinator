@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  discovery-micro:
+    image: discovery-micro:0.0.1-SNAPSHOT
+    container_name: discovery-micro
+    healthcheck:
+      test: ['CMD', 'curl', '-f','http://localhost:8761/actuator/health']
+      interval: 30s
+      timeout: 5s
+      retries: 1
+    ports:
+      - 8761:8761
+
+  examinator-micro:
+    image: examinator-micro:0.0.1-SNAPSHOT
+    container_name: examinator-micro
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f','http://localhost:8003/actuator/health' ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 8003:8003
+    depends_on:
+      discovery-micro:
+        condition: service_healthy
+
+  math-micro:
+    image: math-micro:0.0.1-SNAPSHOT
+    container_name: math-micro
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f','http://localhost:8001/actuator/health' ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 8001:8001
+    depends_on:
+      discovery-micro:
+        condition: service_healthy
+
+  history-micro:
+    image: history-micro:0.0.1-SNAPSHOT
+    container_name: history-micro
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f','http://localhost:8002/actuator/health' ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 8002:8002
+    depends_on:
+      discovery-micro:
+        condition: service_healthy

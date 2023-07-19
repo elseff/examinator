@@ -1,0 +1,82 @@
+version: '3'
+
+services:
+  discovery-micro:
+    container_name: discovery-micro
+    image: discovery-micro:layered
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f','http://localhost:8761/actuator/health' ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 8761:8761
+
+  math-micro:
+    container_name: math-micro
+    image: math-micro:layered
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f','http://localhost:8001/actuator/health' ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    environment:
+      DISCOVERY_URL: http://discovery-micro:8761/eureka/
+    ports:
+      - 8001:8001
+    depends_on:
+      discovery-micro:
+        condition: service_healthy
+
+  history-micro:
+    container_name: history-micro
+    image: history-micro:layered
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f','http://localhost:8002/actuator/health' ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    environment:
+      - DISCOVERY_URL=http://discovery-micro:8761/eureka/
+      - POSTGRES_URL=jdbc:postgresql://history-micro-pg:5432/history-micro
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_USER=postgres
+    ports:
+      - 8002:8002
+    depends_on:
+      history-micro-pg:
+        condition: service_healthy
+      discovery-micro:
+        condition: service_healthy
+
+  history-micro-pg:
+    container_name: history-micro-pg
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=history-micro
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: [ "CMD-SHELL","sh -c 'pg_isready -U postgres -d history-micro'" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: always
+
+  examinator-micro:
+    container_name: examinator-micro
+    image: examinator-micro:layered
+    healthcheck:
+      test: [ 'CMD', 'curl', '-f','http://localhost:8003/actuator/health' ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    environment:
+      DISCOVERY_URL: http://discovery-micro:8761/eureka/
+    ports:
+      - 8003:8003
+    depends_on:
+      discovery-micro:
+        condition: service_healthy
