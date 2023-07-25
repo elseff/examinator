@@ -3,7 +3,9 @@
 [![Actions](https://github.com/elseff/examinator/workflows/Build/badge.svg)](https://github.com/elseff/examinator/actions)
 
 <img alt="examinator logo" src="images/examinator-diagram.png"/>
-
+    
+    Приложение позволяет получить список вопросов для экзамена по указанным темам.
+    
 <b>Технологии и языки:</b>
 1. Java 17
 2. Spring (Boot, Data JPA, Web, Cloud, Actuator)
